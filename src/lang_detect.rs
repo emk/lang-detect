@@ -31,7 +31,7 @@ fn main() {
 
     let server = Server {
         handlers: Router::from_routes(routes),
-        port: get_port()
+        port: get_server_port()
     };
 
     server.run();
