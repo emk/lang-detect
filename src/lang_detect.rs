@@ -2,6 +2,9 @@
 
 extern crate rustful;
 extern crate http;
+
+use std::os::getenv;
+use std::io::net::ip::Port;
 use rustful::{Server, Router, Request, Response};
 use http::method::Get;
 
@@ -12,6 +15,15 @@ fn lang_detect(request: &Request, response: &mut Response) {
     }
 }
 
+/// Look up our server port number in PORT, for
+/// compatibility with Heroku.
+fn get_server_port() -> Port {
+    getenv("PORT")
+        .and_then(|s| from_str::<Port>(s.as_slice()))
+        .unwrap_or(8080)
+}
+
+/// Configure and run our server.
 fn main() {
     let routes = [
         (Get, "/", lang_detect)
@@ -19,7 +31,7 @@ fn main() {
 
     let server = Server {
         handlers: Router::from_routes(routes),
-        port: 8080
+        port: get_port()
     };
 
     server.run();
