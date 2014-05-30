@@ -4,7 +4,6 @@ all: deps build
 
 deps:
 	(cd lib/rustful && make deps && make)
-	find lib -name \*.so -exec rm {} \; # Force static link.
 
 build:
 	rustc -L lib/rustful/lib/ -o lang-detect src/lang_detect.rs
