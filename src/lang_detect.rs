@@ -9,7 +9,7 @@ use rustful::{Server, Router, Request, Response};
 use http::method::Get;
 
 fn lang_detect(request: &Request, response: &mut Response) {
-    match response.write("Hello!".as_bytes()) {
+    match response.write("Hello from Rust!".as_bytes()) {
         Err(e) => println!("error: {}", e),
         _ => {}
     }
