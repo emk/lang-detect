@@ -2,9 +2,11 @@
 
 extern crate rustful;
 extern crate http;
+extern crate sync;
 
 use std::os::getenv;
 use std::io::net::ip::Port;
+use sync::Arc;
 use rustful::{Server, Router, Request, Response};
 use http::method::Get;
 
@@ -29,10 +31,6 @@ fn main() {
         (Get, "/", lang_detect)
     ];
 
-    let server = Server {
-        handlers: Router::from_routes(routes),
-        port: get_server_port()
-    };
-
+    let server = Server::new(get_server_port(), Router::from_routes(routes));
     server.run();
 }
