@@ -2,11 +2,9 @@
 
 extern crate rustful;
 extern crate http;
-extern crate sync;
 
 use std::os::getenv;
 use std::io::net::ip::Port;
-use sync::Arc;
 use rustful::{Server, Router, Request, Response};
 use http::method::Get;
 
