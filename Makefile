@@ -8,8 +8,12 @@ deps:
 build:
 	rustc -L lib/rustful/lib/ -o lang-detect src/lang_detect.rs
 
+test:
+	rustc -L lib/rustful/lib/ --test -o test src/test.rs
+	./test
+
 clean:
 	rm -rf lang-detect lib/rustful
 
-.PHONY: all deps build clean
+.PHONY: all deps build test clean
 
