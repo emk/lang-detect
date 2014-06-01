@@ -82,8 +82,11 @@ fn test_language_tag() {
     assert!(lt("en-123").is_some());
 }
 
-/// An HTTP language range, as defined in RFC 2616.  This can be matched
-/// against a LanguageSubtag.
+//=========================================================================
+// Everything below this line is very much a work in progress.
+
+/// An HTTP language range, as defined in RFC 3066.  This can be matched
+/// against a LanguageTag.
 //enum LanguageRange {
 //    Prefix(LanguageTag),
 //    Wildcard
