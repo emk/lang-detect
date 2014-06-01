@@ -10,6 +10,9 @@ use std::option::collect;
 /// case-insensitive, according to RFC 3066.
 struct Subtag(String);
 
+/// Return a Subtag, or None if the input string is invalid.
+fn subtag(s: &str) -> Option<Subtag> { from_str(s) }
+
 impl FromStr for Subtag {
     fn from_str(s: &str) -> Option<Subtag> {
         if !(regex!(r"^[A-Za-z0-9]{1,8}$").is_match(s)) {
@@ -33,20 +36,18 @@ impl Eq for Subtag {
 
 #[test]
 fn test_tag_from_str() {
-    fn tag_opt(s: &str) -> Option<Subtag> { from_str(s) }
-    assert!(tag_opt("en") == Some(Subtag(String::from_str("en"))));
-    assert!(tag_opt("x") == Some(Subtag(String::from_str("x"))));
-    assert!(tag_opt("abcd1234") == Some(Subtag(String::from_str("abcd1234"))));
-    assert!(tag_opt("") == None);
-    assert!(tag_opt("abcd12345") == None);
+    assert!(subtag("en") == Some(Subtag(String::from_str("en"))));
+    assert!(subtag("x") == Some(Subtag(String::from_str("x"))));
+    assert!(subtag("abcd1234") == Some(Subtag(String::from_str("abcd1234"))));
+    assert!(subtag("") == None);
+    assert!(subtag("abcd12345") == None);
 }
 
 #[test]
 fn test_tag_eq() {
-    fn tag(s: &str) -> Subtag { from_str(s).unwrap() }
-    assert!(tag("en") == tag("en"));
-    assert!(tag("gb") == tag("GB"));
-    assert!(tag("en") != tag("fr"));
+    assert!(subtag("en").unwrap() == subtag("en").unwrap());
+    assert!(subtag("gb").unwrap() == subtag("GB").unwrap());
+    assert!(subtag("en").unwrap() != subtag("fr").unwrap());
 }
 
 /// A tag describing a language, as defined in RFC 1766.
@@ -54,35 +55,37 @@ struct LanguageTag {
     components: Vec<Subtag>
 }
 
+/// Return a LanguageTag, or None if the input string is invalid.
+fn language_tag(s: &str) -> Option<LanguageTag> { from_str(s) }
+
 impl FromStr for LanguageTag {
     fn from_str(s: &str) -> Option<LanguageTag> {
         if !(regex!(r"^[A-Za-z]{1,8}(-[A-Za-z0-9]{1,8})*$").is_match(s)) {
             return None
         }
-        fn parse(s: &str) -> Option<Subtag> { from_str(s) }
-        let parsed: Option<Vec<Subtag>> = collect(s.split('-').map(parse));
+        let parsed: Option<Vec<Subtag>> = collect(s.split('-').map(subtag));
         parsed.map(|components| LanguageTag { components: components })
     }
 }
 
 #[test]
 fn test_language_tag() {
-    fn tag(s: &str) -> Subtag { from_str(s).unwrap() }
-    fn ltag_opt(s: &str) -> Option<LanguageTag> { from_str(s) }
+    fn st(s: &str) -> Subtag { subtag(s).unwrap() }
+    let lt = language_tag;
 
-    assert!(ltag_opt("en").unwrap().components == vec!(tag("en")));
-    assert!(ltag_opt("fr-FR").unwrap().components == vec!(tag("fr"), tag("FR")));
+    assert!(lt("en").unwrap().components == vec!(st("en")));
+    assert!(lt("fr-FR").unwrap().components == vec!(st("fr"), st("FR")));
 
-    assert!(ltag_opt("").is_none());
-    assert!(ltag_opt("en-").is_none());
-    assert!(ltag_opt("123-US").is_none());
-    assert!(ltag_opt("en-123").is_some());
+    assert!(lt("").is_none());
+    assert!(lt("en-").is_none());
+    assert!(lt("123-US").is_none());
+    assert!(lt("en-123").is_some());
 }
 
 /// An HTTP language range, as defined in RFC 2616.  This can be matched
 /// against a LanguageSubtag.
 //enum LanguageRange {
-//    Subtags(Vec<Subtag>),
+//    Prefix(LanguageTag),
 //    Wildcard
 //}
 
