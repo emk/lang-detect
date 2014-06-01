@@ -14,7 +14,7 @@ impl FromStr for Tag {
         if !(regex!(r"^[A-Za-z0-9]{1,8}$").is_match(s)) {
             return None
         }
-        from_str(s).map(|t| Tag(t))
+        from_str(s).map(Tag)
     }
 }
 
