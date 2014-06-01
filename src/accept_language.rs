@@ -55,9 +55,9 @@ impl QValue {
 
 #[test]
 fn test_qvalue() {
-    assert!(QValue::from_str("0").to_f32() == 0.0)
-    assert!(QValue::from_str("0.").to_f32() == 0.0)
-    assert!(QValue::from_str("0.000").to_f32() == 0.0)
-    assert!(QValue::from_str("0.5").to_f32() == 0.5)
-    assert!(QValue::from_str("1").to_f32() == 1.0)
+    assert!(QValue::from_str("0").to_f32() == 0.0);
+    assert!(QValue::from_str("0.").to_f32() == 0.0);
+    assert!(QValue::from_str("0.000").to_f32() == 0.0);
+    assert!(QValue::from_str("0.5").to_f32() == 0.5);
+    assert!(QValue::from_str("1").to_f32() == 1.0);
 }
