@@ -51,6 +51,7 @@ fn test_tag_eq() {
 }
 
 /// A tag describing a language, as defined in RFC 1766.
+#[deriving(Eq)]
 struct LanguageTag {
     components: Vec<Subtag>
 }
@@ -82,15 +83,37 @@ fn test_language_tag() {
     assert!(lt("en-123").is_some());
 }
 
-//=========================================================================
-// Everything below this line is very much a work in progress.
-
 /// An HTTP language range, as defined in RFC 3066.  This can be matched
 /// against a LanguageTag.
-//enum LanguageRange {
-//    Prefix(LanguageTag),
-//    Wildcard
-//}
+#[deriving(Eq)]
+enum LanguageRange {
+    Prefix(LanguageTag),
+    Wildcard
+}
+
+/// Return a LanguageTag, or None if the input string is invalid.
+fn language_range(s: &str) -> Option<LanguageRange> { from_str(s) }
+
+impl FromStr for LanguageRange {
+    fn from_str(s: &str) -> Option<LanguageRange> {
+        if s == "*" {
+            return Some(Wildcard)
+        }
+        language_tag(s).map(Prefix)
+    }
+}
+
+#[test]
+fn test_language_range() {
+    assert!(language_range("en").unwrap() ==
+            Prefix(language_tag("en").unwrap()));
+    assert!(language_range("*").unwrap() == Wildcard);
+    assert!(language_range("en-").is_none());
+}
+
+
+//=========================================================================
+// Everything below this line is very much a work in progress.
 
 /// An HTTP quality value, as defined in RFC 2616.  A floating point number
 /// from 0 to 1, inclusive, with up to three digits of precision after the
