@@ -1,6 +1,7 @@
+// Goal: Parse "fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4".
+
 use std::string::String;
 use std::ascii::OwnedStrAsciiExt;
-use std::from_str::FromStr;
 
 /// A single component of a LanguageTag.  Must contain '1*8ALPHA', that is,
 /// 1 to 8 ASCII alphabetic characters.  We preserve case, but must
@@ -31,7 +32,24 @@ fn test_tag_eq() {
 }
 
 /// A tag describing a language, as defined in RFC 1766.
-struct LanguageTag(Tag,Vec<Tag>);
+struct LanguageTag {
+    components: Vec<Tag>
+}
+
+impl LanguageTag {
+    fn from_str(s: &str) -> LanguageTag {
+        let v: Vec<Tag> = s.split('-').map(|t| Tag::from_str(t)).collect();
+        LanguageTag { components: v }
+    }
+}
+
+#[test]
+fn test_language_tag() {
+    let en = LanguageTag::from_str("en");
+    assert!(en.components == vec!(Tag::from_str("en")));
+    let fr_fr = LanguageTag::from_str("fr-FR");
+    assert!(fr_fr.components == vec!(Tag::from_str("fr"), Tag::from_str("FR")));
+}
 
 /// An HTTP language range, as defined in RFC 2616.  This can be matched
 /// against a LanguageTag.
