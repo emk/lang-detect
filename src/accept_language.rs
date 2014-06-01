@@ -15,9 +15,7 @@ fn subtag(s: &str) -> Option<Subtag> { from_str(s) }
 
 impl FromStr for Subtag {
     fn from_str(s: &str) -> Option<Subtag> {
-        if !(regex!(r"^[A-Za-z0-9]{1,8}$").is_match(s)) {
-            return None
-        }
+        if !(regex!(r"^[A-Za-z0-9]{1,8}$").is_match(s)) { return None }
         from_str(s).map(Subtag)
     }
 }
@@ -96,9 +94,7 @@ fn language_range(s: &str) -> Option<LanguageRange> { from_str(s) }
 
 impl FromStr for LanguageRange {
     fn from_str(s: &str) -> Option<LanguageRange> {
-        if s == "*" {
-            return Some(Wildcard)
-        }
+        if s == "*" { return Some(Wildcard) }
         language_tag(s).map(Prefix)
     }
 }
@@ -133,34 +129,10 @@ fn test_language_range_matches() {
     let fr = language_tag("fr").unwrap();
     let fr_FR = language_tag("fr-FR").unwrap();
     let fr_range = language_range("fr").unwrap();
+    let fr_FR_range = language_range("fr-FR").unwrap();
     assert!(Wildcard.matches(&en));
     assert!(!fr_range.matches(&en));
     assert!(fr_range.matches(&fr));
     assert!(fr_range.matches(&fr_FR));
-}
-
-
-//=========================================================================
-// Everything below this line is very much a work in progress.
-
-/// An HTTP quality value, as defined in RFC 2616.  A floating point number
-/// from 0 to 1, inclusive, with up to three digits of precision after the
-/// decimal point.  The decimal point and trailing digits are optional.
-struct QValue(f32);
-
-impl QValue {
-    fn from_str(s: &str) -> QValue {
-        let f: f32 = from_str(s).unwrap();
-        QValue(f)
-    }
-    fn to_f32(&self) -> f32 { let &QValue(f) = self; f }
-}
-
-#[test]
-fn test_qvalue() {
-    assert!(QValue::from_str("0").to_f32() == 0.0);
-    assert!(QValue::from_str("0.").to_f32() == 0.0);
-    assert!(QValue::from_str("0.000").to_f32() == 0.0);
-    assert!(QValue::from_str("0.5").to_f32() == 0.5);
-    assert!(QValue::from_str("1").to_f32() == 1.0);
+    assert!(!fr_FR_range.matches(&fr));
 }
