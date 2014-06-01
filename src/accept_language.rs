@@ -3,6 +3,7 @@
 use std::string::String;
 use std::ascii::OwnedStrAsciiExt;
 use std::from_str::FromStr;
+use std::option::collect;
 
 /// A single component of a LanguageTag.  Must 1 to 8 ASCII alphabetic and
 /// digit characters.  We preserve case, but must otherwise treat tags as
@@ -53,21 +54,29 @@ struct LanguageTag {
     components: Vec<Tag>
 }
 
-impl LanguageTag {
-    fn from_str(s: &str) -> LanguageTag {
-        let v: Vec<Tag> =
-            s.split('-').map(|t| from_str(t).unwrap()).collect();
-        LanguageTag { components: v }
+impl FromStr for LanguageTag {
+    fn from_str(s: &str) -> Option<LanguageTag> {
+        if !(regex!(r"^[A-Za-z]{1,8}(-[A-Za-z0-9]{1,8})*$").is_match(s)) {
+            return None
+        }
+        fn parse(s: &str) -> Option<Tag> { from_str(s) }
+        let parsed: Option<Vec<Tag>> = collect(s.split('-').map(parse));
+        parsed.map(|components| LanguageTag { components: components })
     }
 }
 
 #[test]
 fn test_language_tag() {
-    let en = LanguageTag::from_str("en");
-    assert!(en.components == vec!(from_str("en").unwrap()));
-    let fr_fr = LanguageTag::from_str("fr-FR");
-    assert!(fr_fr.components ==
-            vec!(from_str("fr").unwrap(), from_str("FR").unwrap()));
+    fn tag(s: &str) -> Tag { from_str(s).unwrap() }
+    fn ltag_opt(s: &str) -> Option<LanguageTag> { from_str(s) }
+
+    assert!(ltag_opt("en").unwrap().components == vec!(tag("en")));
+    assert!(ltag_opt("fr-FR").unwrap().components == vec!(tag("fr"), tag("FR")));
+
+    assert!(ltag_opt("").is_none());
+    assert!(ltag_opt("en-").is_none());
+    assert!(ltag_opt("123-US").is_none());
+    assert!(ltag_opt("en-123").is_some());
 }
 
 /// An HTTP language range, as defined in RFC 2616.  This can be matched
