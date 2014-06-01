@@ -2,14 +2,17 @@
 
 use std::string::String;
 use std::ascii::OwnedStrAsciiExt;
+use std::from_str::FromStr;
 
-/// A single component of a LanguageTag.  Must contain '1*8ALPHA', that is,
-/// 1 to 8 ASCII alphabetic characters.  We preserve case, but must
-/// otherwise treat tags as case-insensitive, according to RFC 1766.
+/// A single component of a LanguageTag.  Must 1 to 8 ASCII alphabetic and
+/// digit characters.  We preserve case, but must otherwise treat tags as
+/// case-insensitive, according to RFC 3066.
 struct Tag(String);
 
-impl Tag {
-    fn from_str(s: &str) -> Tag { Tag(String::from_str(s)) }
+impl FromStr for Tag {
+    fn from_str(s: &str) -> Option<Tag> {
+        from_str(s).and_then(|t| Some(Tag(t)))
+    }
 }
 
 impl Eq for Tag {
@@ -26,9 +29,10 @@ impl Eq for Tag {
 
 #[test]
 fn test_tag_eq() {
-    assert!(Tag::from_str("en") == Tag::from_str("en"));
-    assert!(Tag::from_str("gb") == Tag::from_str("GB"));
-    assert!(Tag::from_str("en") != Tag::from_str("fr"));
+    fn tag(s: &str) -> Tag { from_str(s).unwrap() }
+    assert!(tag("en") == tag("en"));
+    assert!(tag("gb") == tag("GB"));
+    assert!(tag("en") != tag("fr"));
 }
 
 /// A tag describing a language, as defined in RFC 1766.
@@ -38,7 +42,8 @@ struct LanguageTag {
 
 impl LanguageTag {
     fn from_str(s: &str) -> LanguageTag {
-        let v: Vec<Tag> = s.split('-').map(|t| Tag::from_str(t)).collect();
+        let v: Vec<Tag> =
+            s.split('-').map(|t| from_str(t).unwrap()).collect();
         LanguageTag { components: v }
     }
 }
@@ -46,9 +51,10 @@ impl LanguageTag {
 #[test]
 fn test_language_tag() {
     let en = LanguageTag::from_str("en");
-    assert!(en.components == vec!(Tag::from_str("en")));
+    assert!(en.components == vec!(from_str("en").unwrap()));
     let fr_fr = LanguageTag::from_str("fr-FR");
-    assert!(fr_fr.components == vec!(Tag::from_str("fr"), Tag::from_str("FR")));
+    assert!(fr_fr.components ==
+            vec!(from_str("fr").unwrap(), from_str("FR").unwrap()));
 }
 
 /// An HTTP language range, as defined in RFC 2616.  This can be matched
