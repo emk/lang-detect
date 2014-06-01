@@ -111,6 +111,34 @@ fn test_language_range() {
     assert!(language_range("en-").is_none());
 }
 
+impl LanguageRange {
+    /// A LanguageRange matches if it's a wildcard, if it's a prefix of a
+    /// tag (honoring subtag boundaries), or if it exactly matches a tag.
+    fn matches(&self, tag: &LanguageTag) -> bool {
+        match self {
+            &Wildcard => true,
+            &Prefix(ref pattern) => {
+                let patc = pattern.components.as_slice();
+                let tagc = tag.components.as_slice();
+                if patc.len() > tagc.len() { return false; }
+                patc == tagc.slice_to(patc.len())
+            }
+        }
+    }
+}
+
+#[test]
+fn test_language_range_matches() {
+    let en = language_tag("en").unwrap();
+    let fr = language_tag("fr").unwrap();
+    let fr_FR = language_tag("fr-FR").unwrap();
+    let fr_range = language_range("fr").unwrap();
+    assert!(Wildcard.matches(&en));
+    assert!(!fr_range.matches(&en));
+    assert!(fr_range.matches(&fr));
+    assert!(fr_range.matches(&fr_FR));
+}
+
 
 //=========================================================================
 // Everything below this line is very much a work in progress.
