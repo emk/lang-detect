@@ -8,23 +8,23 @@ use std::option::collect;
 /// A single component of a LanguageTag.  Must 1 to 8 ASCII alphabetic and
 /// digit characters.  We preserve case, but must otherwise treat tags as
 /// case-insensitive, according to RFC 3066.
-struct Tag(String);
+struct Subtag(String);
 
-impl FromStr for Tag {
-    fn from_str(s: &str) -> Option<Tag> {
+impl FromStr for Subtag {
+    fn from_str(s: &str) -> Option<Subtag> {
         if !(regex!(r"^[A-Za-z0-9]{1,8}$").is_match(s)) {
             return None
         }
-        from_str(s).map(Tag)
+        from_str(s).map(Subtag)
     }
 }
 
-impl Eq for Tag {
-    /// Tags are compared in a case-insenstive fashion, as specified by RFC
+impl Eq for Subtag {
+    /// Subtags are compared in a case-insenstive fashion, as specified by RFC
     /// 3066.
-    fn eq(&self, other: &Tag) -> bool {
-        let &Tag(ref str1) = self;
-        let &Tag(ref str2) = other;
+    fn eq(&self, other: &Subtag) -> bool {
+        let &Subtag(ref str1) = self;
+        let &Subtag(ref str2) = other;
         // We can do better than this!
         str1.to_string().into_ascii_lower() ==
             str2.to_string().into_ascii_lower()
@@ -33,17 +33,17 @@ impl Eq for Tag {
 
 #[test]
 fn test_tag_from_str() {
-    fn tag_opt(s: &str) -> Option<Tag> { from_str(s) }
-    assert!(tag_opt("en") == Some(Tag(String::from_str("en"))));
-    assert!(tag_opt("x") == Some(Tag(String::from_str("x"))));
-    assert!(tag_opt("abcd1234") == Some(Tag(String::from_str("abcd1234"))));
+    fn tag_opt(s: &str) -> Option<Subtag> { from_str(s) }
+    assert!(tag_opt("en") == Some(Subtag(String::from_str("en"))));
+    assert!(tag_opt("x") == Some(Subtag(String::from_str("x"))));
+    assert!(tag_opt("abcd1234") == Some(Subtag(String::from_str("abcd1234"))));
     assert!(tag_opt("") == None);
     assert!(tag_opt("abcd12345") == None);
 }
 
 #[test]
 fn test_tag_eq() {
-    fn tag(s: &str) -> Tag { from_str(s).unwrap() }
+    fn tag(s: &str) -> Subtag { from_str(s).unwrap() }
     assert!(tag("en") == tag("en"));
     assert!(tag("gb") == tag("GB"));
     assert!(tag("en") != tag("fr"));
@@ -51,7 +51,7 @@ fn test_tag_eq() {
 
 /// A tag describing a language, as defined in RFC 1766.
 struct LanguageTag {
-    components: Vec<Tag>
+    components: Vec<Subtag>
 }
 
 impl FromStr for LanguageTag {
@@ -59,15 +59,15 @@ impl FromStr for LanguageTag {
         if !(regex!(r"^[A-Za-z]{1,8}(-[A-Za-z0-9]{1,8})*$").is_match(s)) {
             return None
         }
-        fn parse(s: &str) -> Option<Tag> { from_str(s) }
-        let parsed: Option<Vec<Tag>> = collect(s.split('-').map(parse));
+        fn parse(s: &str) -> Option<Subtag> { from_str(s) }
+        let parsed: Option<Vec<Subtag>> = collect(s.split('-').map(parse));
         parsed.map(|components| LanguageTag { components: components })
     }
 }
 
 #[test]
 fn test_language_tag() {
-    fn tag(s: &str) -> Tag { from_str(s).unwrap() }
+    fn tag(s: &str) -> Subtag { from_str(s).unwrap() }
     fn ltag_opt(s: &str) -> Option<LanguageTag> { from_str(s) }
 
     assert!(ltag_opt("en").unwrap().components == vec!(tag("en")));
@@ -80,11 +80,11 @@ fn test_language_tag() {
 }
 
 /// An HTTP language range, as defined in RFC 2616.  This can be matched
-/// against a LanguageTag.
-enum LanguageRange {
-    Tags(Tag, Vec<Tag>),
-    Wildcard
-}
+/// against a LanguageSubtag.
+//enum LanguageRange {
+//    Subtags(Vec<Subtag>),
+//    Wildcard
+//}
 
 /// An HTTP quality value, as defined in RFC 2616.  A floating point number
 /// from 0 to 1, inclusive, with up to three digits of precision after the
