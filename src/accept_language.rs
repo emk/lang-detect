@@ -11,13 +11,16 @@ struct Tag(String);
 
 impl FromStr for Tag {
     fn from_str(s: &str) -> Option<Tag> {
-        from_str(s).and_then(|t| Some(Tag(t)))
+        if !(regex!(r"^[A-Za-z0-9]{1,8}$").is_match(s)) {
+            return None
+        }
+        from_str(s).map(|t| Tag(t))
     }
 }
 
 impl Eq for Tag {
     /// Tags are compared in a case-insenstive fashion, as specified by RFC
-    /// 1766.
+    /// 3066.
     fn eq(&self, other: &Tag) -> bool {
         let &Tag(ref str1) = self;
         let &Tag(ref str2) = other;
@@ -25,6 +28,16 @@ impl Eq for Tag {
         str1.to_string().into_ascii_lower() ==
             str2.to_string().into_ascii_lower()
     }
+}
+
+#[test]
+fn test_tag_from_str() {
+    fn tag_opt(s: &str) -> Option<Tag> { from_str(s) }
+    assert!(tag_opt("en") == Some(Tag(String::from_str("en"))));
+    assert!(tag_opt("x") == Some(Tag(String::from_str("x"))));
+    assert!(tag_opt("abcd1234") == Some(Tag(String::from_str("abcd1234"))));
+    assert!(tag_opt("") == None);
+    assert!(tag_opt("abcd12345") == None);
 }
 
 #[test]
